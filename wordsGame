@@ -1,0 +1,288 @@
+#include<string>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+#include<algorithm>
+using namespace std;
+
+template <typename T>
+class Stack {
+private:
+    struct Node {
+        T data;
+        Node* next;
+    };
+
+    Node* top;
+
+public:
+    Stack() {
+        top = nullptr;
+    }
+
+    ~Stack() {
+        while (!isEmpty()) {
+            pop();
+        }
+    }
+
+    void push(T data) {
+        Node* newNode = new Node;
+        newNode->data = data;
+        newNode->next = top;
+        top = newNode;
+    }
+
+    T pop() {
+        if (isEmpty()) {
+            throw runtime_error("Stack is empty");
+        }
+
+        T data = top->data;
+        Node* temp = top;
+        top = top->next;
+        delete temp;
+        return data;
+    }
+
+    T peek() {
+        if (isEmpty()) {
+            throw runtime_error("Stack is empty");
+        }
+
+        return top->data;
+    }
+
+    bool isEmpty() {
+        return (top == nullptr);
+    }
+
+    int size() {
+        int count = 0;
+        Node* temp = top;
+        while (temp != nullptr) {
+            count++;
+            temp = temp->next;
+        }
+        return count;
+    }
+};
+template <typename T>
+
+class Queue {
+private:
+    struct Node {
+        T data;
+        Node* next;
+    };
+
+    Node* front;
+    Node* rear;
+
+public:
+    Queue() {
+        front = nullptr;
+        rear = nullptr;
+    }
+
+    ~Queue() {
+        while (!isEmpty()) {
+            dequeue();
+        }
+    }
+
+    void enqueue(T data) {
+        Node* newNode = new Node;
+        newNode->data = data;
+        newNode->next = nullptr;
+
+        if (isEmpty()) {
+            front = newNode;
+            rear = newNode;
+        }
+        else {
+            rear->next = newNode;
+            rear = newNode;
+        }
+    }
+
+    T dequeue() {
+        if (isEmpty()) {
+            throw runtime_error("Queue is empty");
+        }
+
+        T data = front->data;
+        Node* temp = front;
+
+        if (front == rear) {
+            front = nullptr;
+            rear = nullptr;
+        }
+        else {
+            front = front->next;
+        }
+
+        delete temp;
+        return data;
+    }
+
+    bool isEmpty() {
+        return (front == nullptr);
+    }
+
+    int size() {
+        int count = 0;
+        Node* temp = front;
+        while (temp != nullptr) {
+            count++;
+            temp = temp->next;
+        }
+        return count;
+    }
+
+};
+
+bool compareWords(string first, string second) {
+    if (first.empty() || second.empty()) {
+    
+        return false;
+    }
+
+    char lastChar = first[first.length() - 1];
+    char firstChar = second[0];
+
+    if (lastChar == firstChar) {
+        
+        return true;
+    }
+    else {
+       
+        return false;
+    }
+}
+int binarySearch(vector<string> arr, string target) {
+    int left = 0;
+    int right = arr.size() - 1;
+    int mid;
+    sort(arr.begin(), arr.end());
+    while (left <= right) {
+        mid = left + (right - left) / 2;
+
+        if (arr[mid] == target) {
+            return mid;
+        }
+        else if (arr[mid] < target) {
+            left = mid + 1;
+        }
+        else {
+            right = mid - 1;
+        }
+    }
+
+    return -1;
+}       
+int main() {
+
+    vector<string>wordsContainer;
+   
+    string player1, player2, winner, reserved;
+    Stack<string> wordsStack;
+    Queue<string> player1WordsQueue;
+    Queue<string> player2WordsQueue;
+    
+    cout << "Enter player 1 name: ";
+    
+    cin >> player1;
+    
+    cout << "Enter player 2 name: ";
+    
+    cin >> player2;
+    
+    system("cls");
+    
+    cout << player1 << "'s turn : ";
+    
+    cin >> reserved;
+    
+    wordsContainer.push_back(reserved);
+    
+    int player1MistakesCounter = 0, player2MistakeCounter = 0;
+    
+    int turn = 1;
+    
+    while (player1MistakesCounter < 3 && player2MistakeCounter < 3) {
+       
+
+        string currentPlayer = turn == 1 ? player2 : player1;
+        cout << currentPlayer << "'s turn : ";
+
+        string word;
+        cin >> word;
+
+        if (compareWords(reserved, word) && binarySearch(wordsContainer, word) == -1) {
+            reserved = word;
+            if (turn == 1) {
+                player1WordsQueue.enqueue(word);
+            }
+            else {
+                player2WordsQueue.enqueue(word);
+            }
+            wordsStack.push(word);
+        }
+        else {
+            if (turn == 1) {
+                player1MistakesCounter++;
+                system("cls");
+                cout << "The score is  " << endl;
+                cout << player1 << " : " << player1MistakesCounter << endl;
+                cout << player2 << " : " << player2MistakeCounter << endl;
+            }
+            else {
+                player2MistakeCounter++;
+                system("cls");
+                cout << "The score is  " << endl;
+                cout << player1 << " : " << player1MistakesCounter << endl;
+                cout << player2 << " : " << player2MistakeCounter << endl;
+            }
+            wordsContainer.push_back(word);
+        }
+
+        turn = turn == 1 ? 0 : 1;
+         
+    }
+
+    cout << player1 << " played these words: ";
+    while (!player1WordsQueue.isEmpty()) {
+        cout << player1WordsQueue.dequeue() << " ";
+    }
+    cout << endl;
+    cout << player2 << " played these words: ";
+    while (!player2WordsQueue.isEmpty()) {
+        cout << player2WordsQueue.dequeue() << " ";
+    }
+    cout << endl;
+
+   
+    cout << "Words played in reverse order: ";
+    while (!wordsStack.isEmpty()) {
+        cout << wordsStack.pop() << " ";
+    }
+    cout << endl;
+
+   
+  
+        winner = player2MistakeCounter>player1MistakesCounter? player2 : player1;
+        cout << "Congratulations " << winner << "! You won the game." << endl;
+    
+    
+
+    return 0;
+}
+
+
+    
+  
+
+
+
+    
